@@ -1,0 +1,17 @@
+{
+  "owner": {
+    "email": "e2e-owner@wrokoflow.test",
+    "password": "WrokoFlow_E2E_2026!",
+    "name": "E2E Owner"
+  },
+  "editor": {
+    "email": "e2e-editor@wrokoflow.test",
+    "password": "WrokoFlow_E2E_2026!",
+    "name": "E2E Editor"
+  },
+  "viewer": {
+    "email": "e2e-viewer@wrokoflow.test",
+    "password": "WrokoFlow_E2E_2026!",
+    "name": "E2E Viewer"
+  }
+}

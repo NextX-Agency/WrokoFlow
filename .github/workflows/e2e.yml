@@ -1,0 +1,89 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: Cypress E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      # Vite build env vars
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+      # Used by cypress.config.ts tasks (Node context)
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      # Test user credentials (passed to Cypress via CYPRESS_ prefix)
+      CYPRESS_E2E_OWNER_EMAIL: ${{ secrets.E2E_OWNER_EMAIL }}
+      CYPRESS_E2E_OWNER_PASS: ${{ secrets.E2E_OWNER_PASS }}
+      CYPRESS_E2E_EDITOR_EMAIL: ${{ secrets.E2E_EDITOR_EMAIL }}
+      CYPRESS_E2E_EDITOR_PASS: ${{ secrets.E2E_EDITOR_PASS }}
+      CYPRESS_E2E_VIEWER_EMAIL: ${{ secrets.E2E_VIEWER_EMAIL }}
+      CYPRESS_E2E_VIEWER_PASS: ${{ secrets.E2E_VIEWER_PASS }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build app
+        run: pnpm build
+
+      - name: Bootstrap E2E test users
+        run: pnpm e2e:setup
+
+      - name: Start dev server (background)
+        run: pnpm preview --port 5173 &
+        # 'pnpm preview' serves the production build — no Hot Reload overhead
+
+      - name: Wait for server to be ready
+        run: npx wait-on http://localhost:5173 --timeout 30000
+
+      - name: Run Cypress E2E tests
+        run: pnpm test:e2e:ci
+        env:
+          # Ensure Cypress finds OWNER_EMAIL etc. from the CYPRESS_ prefixed vars above
+          CYPRESS_OWNER_EMAIL: ${{ secrets.E2E_OWNER_EMAIL }}
+          CYPRESS_OWNER_PASS: ${{ secrets.E2E_OWNER_PASS }}
+          CYPRESS_EDITOR_EMAIL: ${{ secrets.E2E_EDITOR_EMAIL }}
+          CYPRESS_EDITOR_PASS: ${{ secrets.E2E_EDITOR_PASS }}
+          CYPRESS_VIEWER_EMAIL: ${{ secrets.E2E_VIEWER_EMAIL }}
+          CYPRESS_VIEWER_PASS: ${{ secrets.E2E_VIEWER_PASS }}
+
+      - name: Upload Cypress screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots
+          retention-days: 7
+
+      - name: Upload Cypress videos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-videos
+          path: cypress/videos
+          retention-days: 7
