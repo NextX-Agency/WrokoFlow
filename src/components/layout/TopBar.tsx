@@ -135,8 +135,11 @@ export function TopBar() {
               data-cy="profile-signout"
               className="gap-2 cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
               onClick={async () => {
-                await signOut()
-                window.location.href = "/login"
+                try {
+                  await signOut()
+                } finally {
+                  window.location.href = "/login"
+                }
               }}
             >
               <LogOut className="w-4 h-4" />

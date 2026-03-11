@@ -41,8 +41,13 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   signOut: async () => {
-    await supabase.auth.signOut()
-    set({ session: null, user: null, googleAccessToken: null })
+    try {
+      await supabase.auth.signOut()
+    } catch {
+      // ignore network/session errors — clear local state regardless
+    } finally {
+      set({ session: null, user: null, googleAccessToken: null })
+    }
   },
 
   initialize: async () => {
