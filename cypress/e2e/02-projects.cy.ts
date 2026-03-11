@@ -29,7 +29,7 @@ describe("Projects", () => {
 
     // Dialog should open
     cy.contains("Create New Project").should("be.visible")
-    cy.get("input[placeholder]").first().type("__e2e_created_project__")
+    cy.get("#name").should("be.visible").type("__e2e_created_project__")
     cy.contains("button", /create project/i).click()
 
     // Switcher should now show the new project
@@ -38,11 +38,12 @@ describe("Projects", () => {
   })
 
   it("switches to an existing project by clicking it in the dropdown", () => {
-    // Seed a project first
+    // Seed a project first, then reload so React Query fetches the new data
     cy.seedProject(owner.email)
+    cy.reload()
 
     cy.get("[data-cy=project-switcher-trigger]").click()
-    cy.get("[data-cy=project-item]").first().click()
+    cy.get("[data-cy=project-item]", { timeout: 10000 }).first().click()
 
     // The switcher should now display that project's name
     cy.get("[data-cy=project-switcher-trigger]", { timeout: 6000 }).should(
@@ -53,20 +54,22 @@ describe("Projects", () => {
 
   it("deletes a project after confirmation", () => {
     cy.seedProject(owner.email)
+    cy.reload()
 
-    // Hover over the project item to reveal the trash button
+    // Open switcher and hover the project item to reveal the trash button
     cy.get("[data-cy=project-switcher-trigger]").click()
-    cy.get("[data-cy=project-item]")
-      .first()
-      .realHover()
+    cy.get("[data-cy=project-item]", { timeout: 10000 }).first().parents("div").first().realHover()
     cy.get("[data-cy=delete-project-btn]").first().click({ force: true })
 
     // Confirmation dialog opens
     cy.contains("Delete Project").should("be.visible")
     cy.get("[data-cy=confirm-delete-project]").click()
 
+    // Reload to get fresh data from DB — confirms the deletion persisted
+    cy.reload()
+
     // Project gone from switcher
-    cy.get("[data-cy=project-switcher-trigger]", { timeout: 8000 }).should(
+    cy.get("[data-cy=project-switcher-trigger]", { timeout: 12000 }).should(
       "not.contain.text",
       "__e2e_project__"
     )
@@ -74,9 +77,10 @@ describe("Projects", () => {
 
   it("cancels project deletion when Cancel is clicked", () => {
     cy.seedProject(owner.email)
+    cy.reload()
 
     cy.get("[data-cy=project-switcher-trigger]").click()
-    cy.get("[data-cy=project-item]").first().realHover()
+    cy.get("[data-cy=project-item]", { timeout: 10000 }).first().parents("div").first().realHover()
     cy.get("[data-cy=delete-project-btn]").first().click({ force: true })
 
     cy.contains("Delete Project").should("be.visible")

@@ -61,7 +61,7 @@ describe("Header UI", () => {
 
   it("clicking Settings in dropdown navigates to /settings", () => {
     cy.get("[data-cy=profile-btn]").click()
-    cy.contains("Settings").click()
+    cy.get("[data-cy=profile-settings]").click()
     cy.url({ timeout: 6000 }).should("include", "/settings")
   })
 })

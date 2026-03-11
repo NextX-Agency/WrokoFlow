@@ -21,6 +21,7 @@ import { Check, ChevronDown, Plus, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { CreateProjectDialog } from "./CreateProjectDialog"
 import { useDeleteProject } from "@/hooks/useProjects"
+import { useAuthStore } from "@/stores/useAuthStore"
 
 interface ProjectSwitcherProps {
   projects: Project[]
@@ -32,6 +33,7 @@ export function ProjectSwitcher({ projects }: ProjectSwitcherProps) {
   const [createOpen, setCreateOpen] = useState(false)
   const [deleteItem, setDeleteItem] = useState<{ id: string; name: string } | null>(null)
   const deleteProject = useDeleteProject()
+  const currentUserId = useAuthStore((s) => s.user?.id)
 
   const activeProject = projects.find((p) => p.id === activeProjectId)
 
@@ -91,19 +93,21 @@ export function ProjectSwitcher({ projects }: ProjectSwitcherProps) {
                     <Check className="w-4 h-4 text-[#B07C4F] flex-shrink-0" />
                   )}
                 </button>
-                <button
-                  data-cy="delete-project-btn"
-                  data-project-id={project.id}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setOpen(false)
-                    setDeleteItem({ id: project.id, name: project.name })
-                  }}
-                  className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 hover:text-red-600 text-[#A09890] transition-all flex-shrink-0"
-                  title="Delete project"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
+                {project.owner_id === currentUserId && (
+                  <button
+                    data-cy="delete-project-btn"
+                    data-project-id={project.id}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setOpen(false)
+                      setDeleteItem({ id: project.id, name: project.name })
+                    }}
+                    className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 hover:text-red-600 text-[#A09890] transition-all flex-shrink-0"
+                    title="Delete project"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
             ))}
           </div>

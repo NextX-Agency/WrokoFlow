@@ -113,6 +113,8 @@ export const TaskCard = memo(function TaskCard({ task }: TaskCardProps) {
             <Tooltip>
               <TooltipTrigger asChild>
                 <span
+                  data-cy="due-date-badge"
+                  data-overdue={isOverdue ? "true" : "false"}
                   className={cn(
                     "flex items-center gap-1 text-[11px]",
                     isOverdue

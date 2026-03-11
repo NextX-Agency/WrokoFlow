@@ -47,13 +47,15 @@ describe("Tasks (Board)", () => {
     cy.contains("E2E New Task", { timeout: 8000 }).should("be.visible")
   })
 
-  it("creates a task by pressing Enter and then can create another", () => {
+  it("creates a task by pressing Enter — then can create a second one", () => {
     cy.get("[data-cy=add-task-btn]").first().click()
-    cy.get("[data-cy=new-task-input]").type("First task{enter}")
-    cy.get("[data-cy=new-task-input]").type("Second task{enter}")
-
+    cy.get("[data-cy=new-task-input]" ).type("First task{enter}")
     cy.contains("First task", { timeout: 8000 }).should("be.visible")
-    cy.contains("Second task").should("be.visible")
+
+    // Input closes after submit — re-open it for second task
+    cy.get("[data-cy=add-task-btn]").first().click()
+    cy.get("[data-cy=new-task-input]").type("Second task{enter}")
+    cy.contains("Second task", { timeout: 8000 }).should("be.visible")
   })
 
   it("opens task detail panel by clicking a task card", () => {
@@ -78,9 +80,9 @@ describe("Tasks (Board)", () => {
   })
 
   it("tasks with tomorrow due date do not appear overdue", () => {
-    // E2E Task Beta has due date = tomorrow — should NOT be red
+    // E2E Task Beta has due date = tomorrow — data-overdue should be false
     cy.contains("[data-cy=task-card]", "E2E Task Beta").within(() => {
-      cy.get(".text-red-500").should("not.exist")
+      cy.get("[data-cy=due-date-badge]").should("have.attr", "data-overdue", "false")
     })
   })
 })

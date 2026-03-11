@@ -123,6 +123,7 @@ export function TopBar() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem
+              data-cy="profile-settings"
               className="gap-2 cursor-pointer"
               onClick={() => window.location.href = "/settings"}
             >
@@ -133,7 +134,10 @@ export function TopBar() {
             <DropdownMenuItem
               data-cy="profile-signout"
               className="gap-2 cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
-              onClick={signOut}
+              onClick={async () => {
+                await signOut()
+                window.location.href = "/login"
+              }}
             >
               <LogOut className="w-4 h-4" />
               Sign out

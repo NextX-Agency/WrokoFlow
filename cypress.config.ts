@@ -1,5 +1,10 @@
 import { defineConfig } from "cypress"
 import { createClient } from "@supabase/supabase-js"
+import * as dotenv from "dotenv"
+
+// Load .env for local Cypress runs (CI injects env vars directly)
+dotenv.config({ path: ".env.local" })
+dotenv.config({ path: ".env" })
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL ?? "https://wormvgagpkqgbftxsikk.supabase.co"
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? ""
@@ -14,7 +19,7 @@ function adminClient() {
 
 export default defineConfig({
   e2e: {
-    baseUrl: "http://localhost:5173",
+    baseUrl: "http://localhost:5174",
     specPattern: "cypress/e2e/**/*.cy.ts",
     supportFile: "cypress/support/e2e.ts",
     fixturesFolder: "cypress/fixtures",
