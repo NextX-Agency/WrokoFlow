@@ -110,7 +110,7 @@ export default function AttendancePage() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b">
+      <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b">
         <div>
           <h1 className="text-lg font-semibold text-gray-900">Attendance</h1>
           <p className="text-sm text-gray-500">
@@ -131,7 +131,7 @@ export default function AttendancePage() {
 
       {/* Attendance Grid */}
       <ScrollArea className="flex-1">
-        <div className="px-6 py-4">
+        <div className="px-4 sm:px-6 py-4">
           <Table>
             <TableHeader>
               <TableRow>

@@ -162,7 +162,7 @@ export default function ListPage() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b">
+      <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b">
         <div>
           <h1 className="text-lg font-semibold text-gray-900">List View</h1>
           <p className="text-sm text-gray-500">{filteredTasks.length} tasks</p>
@@ -171,7 +171,7 @@ export default function ListPage() {
 
       {/* List tabs */}
       {lists && lists.length > 0 && (
-        <div className="px-6 pt-3">
+        <div className="px-4 sm:px-6 pt-3">
           <Tabs
             value={activeListFilter || "all"}
             onValueChange={(v) => setActiveListFilter(v === "all" ? null : v)}
@@ -189,7 +189,7 @@ export default function ListPage() {
       )}
 
       {/* Toolbar */}
-      <div className="flex items-center gap-3 px-6 py-3">
+      <div className="flex items-center gap-3 px-4 sm:px-6 py-3">
         <div className="relative flex-1 max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <Input
@@ -248,7 +248,7 @@ export default function ListPage() {
 
       {/* Bulk actions */}
       {selectedTaskIds.length > 0 && (
-        <div className="flex items-center gap-3 px-6 py-2 bg-blue-50 border-b border-blue-100">
+        <div className="flex items-center gap-3 px-4 sm:px-6 py-2 bg-blue-50 border-b border-blue-100">
           <span className="text-sm text-blue-700 font-medium">
             {selectedTaskIds.length} selected
           </span>
@@ -273,7 +273,7 @@ export default function ListPage() {
       )}
 
       {/* Table */}
-      <div className="flex-1 overflow-auto px-6">
+      <div className="flex-1 overflow-auto px-4 sm:px-6">
         {filteredTasks.length === 0 ? (
           <EmptyState
             icon={ListTodo}

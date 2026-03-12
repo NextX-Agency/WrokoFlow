@@ -10,7 +10,7 @@ interface AuthState {
 
   setSession: (session: Session | null) => void
   setGoogleAccessToken: (token: string | null) => void
-  signInWithGoogle: () => Promise<void>
+  signInWithGoogle: (redirectTo?: string) => Promise<void>
   signOut: () => Promise<void>
   initialize: () => Promise<void>
 }
@@ -30,12 +30,12 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   setGoogleAccessToken: (token) => set({ googleAccessToken: token }),
 
-  signInWithGoogle: async () => {
+  signInWithGoogle: async (redirectTo?: string) => {
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
         scopes: "https://www.googleapis.com/auth/calendar.events",
-        redirectTo: window.location.origin,
+        redirectTo: redirectTo ?? window.location.origin,
       },
     })
   },

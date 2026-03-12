@@ -133,7 +133,7 @@ export default function TrainingPage() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b">
+      <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b">
         <div>
           <h1 className="text-lg font-semibold text-gray-900">Training Schedule</h1>
           <p className="text-sm text-gray-500">
@@ -158,7 +158,7 @@ export default function TrainingPage() {
       </div>
 
       {/* Table */}
-      <div className="flex-1 overflow-auto px-6 py-4">
+      <div className="flex-1 overflow-auto px-4 sm:px-6 py-4">
         {!trainings || trainings.length === 0 ? (
           <EmptyState
             icon={GraduationCap}

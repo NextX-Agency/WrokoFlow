@@ -20,28 +20,18 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { Input } from "@/components/ui/input"
-import { Bell, Search, Menu, Settings, LogOut, Clock } from "lucide-react"
+import { Bell, Search, Settings, LogOut, Clock } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 
 export function TopBar() {
-  const { toggleSidebar, activeProjectId } = useUIStore()
+  const { activeProjectId } = useUIStore()
   const { user, signOut } = useAuthStore()
   const { data: projects } = useProjects()
   const { data: activityLog } = useActivityLog(activeProjectId, 10)
   const [bellOpen, setBellOpen] = useState(false)
 
   return (
-    <header className="flex items-center gap-4 px-4 md:px-6 py-3 bg-white/80 backdrop-blur-sm border-b border-[#E4DDD2]">
-      {/* Mobile hamburger */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="md:hidden h-9 w-9 text-[#7A7267] hover:text-[#4A4540] hover:bg-[#F0EBE3]"
-        onClick={toggleSidebar}
-      >
-        <Menu className="w-5 h-5" />
-      </Button>
-
+    <header className="flex items-center gap-2 sm:gap-4 px-4 md:px-6 py-3 bg-white/80 backdrop-blur-sm border-b border-[#E4DDD2]">
       {/* Project Switcher */}
       <ProjectSwitcher projects={projects || []} />
 

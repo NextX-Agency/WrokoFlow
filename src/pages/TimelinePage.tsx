@@ -107,7 +107,7 @@ export default function TimelinePage() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between px-6 py-4 border-b">
+      <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b">
         <div>
           <h1 className="text-lg font-semibold text-gray-900">Timeline</h1>
           <p className="text-sm text-gray-500">

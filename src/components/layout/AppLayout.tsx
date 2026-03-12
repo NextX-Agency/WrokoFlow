@@ -27,7 +27,7 @@ export function AppLayout() {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
         <TopBar />
-        <main className="flex-1 overflow-auto p-4 md:p-6 pb-mobile-nav md:pb-6">
+        <main className="flex-1 overflow-auto p-3 sm:p-5 md:p-6 pb-mobile-nav md:pb-6">
           <Outlet />
         </main>
       </div>
