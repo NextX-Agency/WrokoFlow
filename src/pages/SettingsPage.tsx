@@ -20,6 +20,7 @@ import { Separator } from "@/components/ui/separator"
 import { LoadingSkeleton } from "@/components/shared/LoadingSkeleton"
 import { MembersPanel } from "@/components/shared/MembersPanel"
 import { InviteMembersDialog } from "@/components/shared/InviteMembersDialog"
+import { AISettings } from "@/components/ai/AISettings"
 import { Settings, Zap, Bell, Shield, Users, UserPlus } from "lucide-react"
 
 export default function SettingsPage() {
@@ -273,6 +274,9 @@ export default function SettingsPage() {
         </div>
       </Card>
 
+      {/* AI Assistant Settings */}
+      <AISettings />
+
       {/* Members */}
       {activeProjectId && (
         <Card className="p-6">
@@ -311,10 +315,10 @@ export default function SettingsPage() {
         </div>
         <Separator className="mb-4" />
         <div className="text-sm text-gray-500 space-y-1">
-          <p>Version: 1.0.0</p>
-          <p>Built with React, Supabase, TanStack Router, Tailwind CSS</p>
+          <p>Version: 2.0.0</p>
+          <p>AI-native project management — built with React, Supabase, TanStack Router, Tailwind CSS</p>
           <p className="text-xs text-gray-400 mt-2">
-            Simpler and more automated than Asana. Built to be reusable across any project.
+            Built by Leonardo Ranoesendjojo · NextX Agencies. Smarter than Asana, more fun than Trello.
           </p>
         </div>
       </Card>

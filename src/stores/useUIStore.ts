@@ -8,6 +8,7 @@ interface UIState {
   openTaskId: string | null
   selectedTaskIds: string[]
   sidebarOpen: boolean
+  aiPanelOpen: boolean
   activeListFilter: string | null
 
   setActiveProjectId: (id: string | null) => void
@@ -20,6 +21,8 @@ interface UIState {
   clearSelection: () => void
   setSidebarOpen: (open: boolean) => void
   toggleSidebar: () => void
+  setAIPanelOpen: (open: boolean) => void
+  toggleAIPanel: () => void
   setActiveListFilter: (id: string | null) => void
 }
 
@@ -29,6 +32,7 @@ export const useUIStore = create<UIState>((set) => ({
   openTaskId: null,
   selectedTaskIds: [],
   sidebarOpen: true,
+  aiPanelOpen: false,
   activeListFilter: null,
 
   setActiveProjectId: (id) => set({ activeProjectId: id }),
@@ -51,5 +55,7 @@ export const useUIStore = create<UIState>((set) => ({
   clearSelection: () => set({ selectedTaskIds: [] }),
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+  setAIPanelOpen: (open) => set({ aiPanelOpen: open }),
+  toggleAIPanel: () => set((state) => ({ aiPanelOpen: !state.aiPanelOpen })),
   setActiveListFilter: (id) => set({ activeListFilter: id }),
 }))

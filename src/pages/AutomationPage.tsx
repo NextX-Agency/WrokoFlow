@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { toast } from "sonner"
 import { useUIStore } from "@/stores/useUIStore"
 import {
   useAutomationRules,
@@ -45,8 +46,11 @@ import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { LoadingSkeleton } from "@/components/shared/LoadingSkeleton"
 import { EmptyState } from "@/components/shared/EmptyState"
-import { Zap, Plus, Trash2, Clock, ArrowRight } from "lucide-react"
+import { Zap, Plus, Trash2, Clock, ArrowRight, Sparkles, Loader2 } from "lucide-react"
 import { format } from "date-fns"
+import { useAISettings } from "@/hooks/useAI"
+import { callAI, type AISettings as AISettingsType, type AIMessage } from "@/lib/ai"
+import { useTasks } from "@/hooks/useTasks"
 
 const TRIGGER_LABELS: Record<AutomationTrigger, string> = {
   status_change: "Status Change",
@@ -73,7 +77,113 @@ export default function AutomationPage() {
   const deleteRule = useDeleteAutomationRule()
   const { data: lists } = useLists(activeProjectId)
   const { data: members } = useMembers(activeProjectId)
+  const { data: tasks } = useTasks(activeProjectId || "")
+  const { data: aiSettingsData } = useAISettings()
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [aiGenerating, setAiGenerating] = useState(false)
+  const [aiSuggestions, setAiSuggestions] = useState<Array<{ name: string; trigger_type: AutomationTrigger; action_type: AutomationAction; trigger_config: Record<string, unknown>; action_config: Record<string, unknown>; description: string }>>([])
+
+  const handleAIGenerate = async () => {
+    if (!aiSettingsData || !activeProjectId) {
+      toast.error("Configure your AI settings first (Settings → AI)")
+      return
+    }
+    setAiGenerating(true)
+    try {
+      const settings: AISettingsType = {
+        provider: aiSettingsData.provider,
+        model: aiSettingsData.model,
+      }
+      const taskSummary = (tasks || []).slice(0, 15).map((t) => ({
+        title: t.title,
+        status: t.status,
+      }))
+      const listNames = (lists || []).map((l) => ({ id: l.id, name: l.name }))
+      const memberNames = (members || []).map((m) => ({ id: m.id, name: m.name }))
+
+      const messages: AIMessage[] = [
+        {
+          role: "system",
+          content: `You are an automation rule generator for a project management app. Suggest exactly 3 automation rules as a compact single-line JSON array.
+
+Rules:
+- Output ONLY the JSON array — no markdown fences, no explanation text before or after.
+- All string values must be on one line — no literal newlines inside strings.
+- Use double-quotes only.
+
+Available triggers: status_change, due_date_passed, task_created, all_subtasks_done, assignment_change
+Available actions: set_status, assign_member, move_list, send_notification, set_priority
+
+Trigger configs: status_change:{from_status?,to_status?} | due_date_passed:{} | task_created:{} | all_subtasks_done:{} | assignment_change:{}
+Action configs: set_status:{status:"To Do"|"In Progress"|"Done"|"Blocked"} | set_priority:{priority:"High"|"Medium"|"Low"} | move_list:{list_id} | assign_member:{member_id} | send_notification:{message}
+
+Each rule object: {"name":"...","description":"...","trigger_type":"...","trigger_config":{...},"action_type":"...","action_config":{...}}`,
+        },
+        {
+          role: "user",
+          content: `Tasks (sample): ${JSON.stringify(taskSummary)}. Lists: ${JSON.stringify(listNames)}. Members: ${JSON.stringify(memberNames)}.`,
+        },
+      ]
+
+      const response = await callAI(messages, [], settings)
+      if (response.content) {
+        // Robust JSON extraction: find the outermost [ ... ] array in the response.
+        // This handles: raw JSON, ```json blocks, JSON with surrounding explanation text.
+        const raw = response.content.trim()
+        let jsonStr: string | null = null
+
+        // 1. Try to find a fenced code block first
+        const fenceMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/)
+        if (fenceMatch) {
+          jsonStr = fenceMatch[1].trim()
+        } else {
+          // 2. Find the outermost balanced [ ... ] — handles trailing/leading text
+          const start = raw.indexOf("[")
+          if (start !== -1) {
+            let depth = 0
+            let end = -1
+            for (let i = start; i < raw.length; i++) {
+              if (raw[i] === "[") depth++
+              else if (raw[i] === "]") {
+                depth--
+                if (depth === 0) { end = i; break }
+              }
+            }
+            if (end !== -1) jsonStr = raw.slice(start, end + 1)
+          }
+        }
+
+        if (!jsonStr) throw new Error("AI did not return a JSON array. Try again.")
+
+        const parsed = JSON.parse(jsonStr)
+        if (Array.isArray(parsed)) {
+          setAiSuggestions(parsed)
+          toast.success(`AI suggested ${parsed.length} rules`)
+        } else {
+          throw new Error("Unexpected response format. Try again.")
+        }
+      }
+    } catch (err) {
+      toast.error(`AI generation failed: ${err instanceof Error ? err.message : "Unknown error"}`)
+    } finally {
+      setAiGenerating(false)
+    }
+  }
+
+  const acceptSuggestion = (suggestion: typeof aiSuggestions[0]) => {
+    if (!activeProjectId) return
+    createRule.mutate({
+      project_id: activeProjectId,
+      name: suggestion.name,
+      description: suggestion.description,
+      trigger_type: suggestion.trigger_type,
+      action_type: suggestion.action_type,
+      trigger_config: suggestion.trigger_config || {},
+      action_config: suggestion.action_config || {},
+      is_active: true,
+    })
+    setAiSuggestions((prev) => prev.filter((s) => s.name !== suggestion.name))
+  }
 
   // New rule form state
   const [newRule, setNewRule] = useState({
@@ -121,7 +231,21 @@ export default function AutomationPage() {
             Create rules to automate repetitive actions
           </p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={handleAIGenerate}
+            disabled={aiGenerating || !aiSettingsData}
+            className="border-[#B07C4F]/30 text-[#B07C4F] hover:bg-[#B07C4F]/10"
+          >
+            {aiGenerating ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Sparkles className="w-4 h-4 mr-2" />
+            )}
+            Generate with AI
+          </Button>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="w-4 h-4 mr-2" />
@@ -379,7 +503,54 @@ export default function AutomationPage() {
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
+
+      {/* AI Suggestions */}
+      {aiSuggestions.length > 0 && (
+        <div className="space-y-3">
+          <h2 className="text-sm font-semibold text-[#B07C4F] flex items-center gap-2">
+            <Sparkles className="w-4 h-4" />
+            AI Suggested Rules ({aiSuggestions.length})
+          </h2>
+          {aiSuggestions.map((suggestion, i) => (
+            <Card key={i} className="p-4 border-[#B07C4F]/20 bg-[#B07C4F]/5">
+              <div className="flex items-center justify-between">
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-gray-900">{suggestion.name}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{suggestion.description}</p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <Badge variant="secondary" className="text-xs">
+                      {TRIGGER_LABELS[suggestion.trigger_type] || suggestion.trigger_type}
+                    </Badge>
+                    <ArrowRight className="w-3 h-3 text-gray-400" />
+                    <Badge variant="outline" className="text-xs">
+                      {ACTION_LABELS[suggestion.action_type] || suggestion.action_type}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 ml-3">
+                  <Button
+                    size="sm"
+                    onClick={() => acceptSuggestion(suggestion)}
+                    className="bg-[#B07C4F] hover:bg-[#9A6A40] text-white"
+                  >
+                    Accept
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setAiSuggestions((prev) => prev.filter((_, j) => j !== i))}
+                    className="text-gray-400 hover:text-red-500"
+                  >
+                    Dismiss
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {/* Rules list */}
       {(!rules || rules.length === 0) ? (

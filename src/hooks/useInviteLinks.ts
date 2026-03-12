@@ -42,7 +42,7 @@ export function useCreateInviteLink() {
     mutationFn: async (input: CreateInviteInput) => {
       const code = generateInviteCode()
       const expiresAt = new Date()
-      expiresAt.setDate(expiresAt.getDate() + 7) // 7-day expiry
+      expiresAt.setDate(expiresAt.getDate() + 30) // 30-day expiry
 
       const { data, error } = await supabase
         .from("invite_links")
@@ -156,22 +156,28 @@ export function useAcceptInvite() {
     mutationFn: async (code: string) => {
       if (!user) throw new Error("You must be signed in to accept an invite")
 
-      // Look up the invite
+      // Look up the invite by code (without time filter for better error messages)
       const { data: invite, error: lookupError } = await supabase
         .from("invite_links")
         .select("*")
         .eq("code", code)
-        .is("revoked_at", null)
-        .is("accepted_at", null)
         .single()
 
       if (lookupError || !invite) {
-        throw new Error("Invalid or expired invite link")
+        throw new Error("Invite link not found. Please check the link and try again.")
+      }
+
+      if (invite.revoked_at) {
+        throw new Error("This invite has been revoked by the project owner.")
+      }
+
+      if (invite.accepted_at) {
+        throw new Error("This invite has already been used.")
       }
 
       // Check if expired
       if (new Date(invite.expires_at) < new Date()) {
-        throw new Error("This invite has expired")
+        throw new Error("This invite has expired. Please ask the project owner for a new invite.")
       }
 
       // Check if email-restricted invite matches the user

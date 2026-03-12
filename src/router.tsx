@@ -12,6 +12,7 @@ import { useAuthStore } from "@/stores/useAuthStore"
 
 // Lazy-loaded pages
 const LoginPage = lazy(() => import("@/pages/LoginPage"))
+const LandingPage = lazy(() => import("@/pages/LandingPage"))
 const BoardPage = lazy(() => import("@/pages/BoardPage"))
 const ListPage = lazy(() => import("@/pages/ListPage"))
 const CalendarPage = lazy(() => import("@/pages/CalendarPage"))
@@ -46,6 +47,19 @@ const loginRoute = createRoute({
   },
 })
 
+// Landing page (public)
+const landingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/",
+  component: function LandingRouteComponent() {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <LandingPage />
+      </Suspense>
+    )
+  },
+})
+
 // Invite accept (public — no auth required, page handles sign-in)
 const inviteRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -75,10 +89,10 @@ const appLayoutRoute = createRoute({
   },
 })
 
-// Dashboard (index)
+// Dashboard
 const dashboardRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
-  path: "/",
+  path: "/dashboard",
   component: function DashboardRouteComponent() {
     return (
       <Suspense fallback={<PageLoader />}>
@@ -194,6 +208,7 @@ const automationRoute = createRoute({
 
 // Build route tree
 const routeTree = rootRoute.addChildren([
+  landingRoute,
   loginRoute,
   inviteRoute,
   appLayoutRoute.addChildren([

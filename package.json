@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "db:migrate": "tsx scripts/migrate.ts",
     "test:all": "tsx scripts/test-all.ts",
+    "test:ai": "tsx scripts/test-ai-providers.ts",
     "email:setup": "tsx scripts/email-setup.ts",
     "db:studio": "drizzle-kit studio",
     "db:push": "drizzle-kit push",

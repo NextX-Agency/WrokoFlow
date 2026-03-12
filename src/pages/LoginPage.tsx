@@ -76,7 +76,7 @@ export default function LoginPage() {
 
           <div className="space-y-4">
             <Button
-              onClick={signInWithGoogle}
+              onClick={() => signInWithGoogle()}
               className="w-full h-12 bg-white hover:bg-[#F5F3F0] text-[#2D2A26] border border-[#E4DDD2] shadow-sm rounded-xl font-medium transition-all hover:shadow-md active:scale-[0.99]"
               variant="outline"
             >

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useUIStore } from "@/stores/useUIStore"
 import type { Project } from "@/types"
 import { Button } from "@/components/ui/button"
@@ -37,10 +37,12 @@ export function ProjectSwitcher({ projects }: ProjectSwitcherProps) {
 
   const activeProject = projects.find((p) => p.id === activeProjectId)
 
-  // Auto-select first project if none active
-  if (!activeProjectId && projects.length > 0) {
-    setActiveProjectId(projects[0].id)
-  }
+  // Auto-select first project if none is active — useEffect avoids setState-during-render
+  useEffect(() => {
+    if (!activeProjectId && projects.length > 0) {
+      setActiveProjectId(projects[0].id)
+    }
+  }, [activeProjectId, projects, setActiveProjectId])
 
   return (
     <>

@@ -1,16 +1,28 @@
-import { Outlet } from "@tanstack/react-router"
+import { useEffect } from "react"
+import { Outlet, useRouter } from "@tanstack/react-router"
 import { Sidebar } from "./Sidebar"
 import { TopBar } from "./TopBar"
 import { MobileNav } from "./MobileNav"
+import { AIAssistant } from "@/components/ai/AIAssistant"
 import { useUIStore } from "@/stores/useUIStore"
+import { useAuthStore } from "@/stores/useAuthStore"
 import { useRealtimeSubscription } from "@/hooks/useRealtime"
 import { useAutomationRunner } from "@/hooks/useAutomationRunner"
 import { cn } from "@/lib/utils"
 
 export function AppLayout() {
   const { activeProjectId, sidebarOpen } = useUIStore()
+  const session = useAuthStore((s) => s.session)
+  const router = useRouter()
   useRealtimeSubscription(activeProjectId)
   useAutomationRunner(activeProjectId)
+
+  // Redirect to login when session is cleared (e.g. sign out)
+  useEffect(() => {
+    if (!session) {
+      router.navigate({ to: "/login", replace: true })
+    }
+  }, [session, router])
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#FAFAF7]">
@@ -34,6 +46,9 @@ export function AppLayout() {
 
       {/* Mobile bottom nav */}
       <MobileNav />
+
+      {/* AI Assistant floating panel */}
+      <AIAssistant />
     </div>
   )
 }

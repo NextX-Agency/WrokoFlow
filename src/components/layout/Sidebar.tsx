@@ -24,7 +24,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { WrokoFlowLogo } from "@/components/shared/WrokoFlowLogo"
 
 const mainNav = [
-  { label: "Dashboard", icon: LayoutDashboard, path: "/" },
+  { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
   { label: "Board", icon: Kanban, path: "/board" },
   { label: "List View", icon: List, path: "/list" },
   { label: "Calendar", icon: Calendar, path: "/calendar" },
